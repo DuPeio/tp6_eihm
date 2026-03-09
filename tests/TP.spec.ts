@@ -220,7 +220,7 @@ test.describe('Gestion de la "To-Do List" (Modèle de Tâche)', () => {
 
 });
 
-
+// redondant
 
 test('Supprimer une tâche', async ({ page }) => {
 
@@ -313,7 +313,7 @@ test('Changer le nom d une tâche', async ({ page }) => {
 
 
 
-test('Ajouter une tâche la place à la fin de la liste', async ({ page }) => {
+test('Ajouter une tâche la place à la fin de la liste de 5 taches', async ({ page }) => {
 
   await page.goto('https://todomvc.com/examples/angular/dist/browser/#/all');
 
@@ -344,7 +344,7 @@ test('Ajouter une tâche la place à la fin de la liste', async ({ page }) => {
 });
 
 
-test('Test ajout en fin de liste et filtres Completed / Active ', async ({ page }) => {
+test('Test ajout en fin de liste de 6 taches et filtres Completed / Active ', async ({ page }) => {
 
   await page.goto('https://todomvc.com/examples/angular/dist/browser/#/all');
 
@@ -398,3 +398,6 @@ test('Test ajout en fin de liste et filtres Completed / Active ', async ({ page 
   }
 
 });
+
+
+
