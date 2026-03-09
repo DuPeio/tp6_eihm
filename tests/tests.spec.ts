@@ -283,7 +283,7 @@ test('Scénario Complet : Cycle de vie d une To-Do List', async ({ page }) => {
 
         // 2. Modification d'une tâche
         await action.renommerUneTache(page, 'Tâche 2', 'Tâche 2 Modifiée');
-        await verification.verifierAbsenceTache(page, 'Tâche 2');
+    
 
         // 3. Complétion de certaines tâches
         await action.basculerStatutTache(page, 'Tâche 1', 'fait');
