@@ -219,3 +219,53 @@ test.describe('Gestion de la "To-Do List" (Modèle de Tâche)', () => {
   });
 
 });
+
+
+
+
+
+import { cocherTache, supprimerTache } from '../fonctions';
+
+test('Cocher une tâche comme faite', async ({ page }) => {
+
+  await page.goto('https://todomvc.com/examples/angular/dist/browser/#/all');
+
+  // Ajouter une tâche
+  const input = page.locator('input.new-todo');
+  await input.fill('Tâche à cocher');
+  await input.press('Enter');
+
+  // Vérifier qu'elle est initialement non cochée
+  const task = page.locator('.todo-list li', { hasText: 'Tâche à cocher' });
+  const checkbox = task.locator('input.toggle');
+  await expect(checkbox).not.toBeChecked();
+
+  // Cocher la tâche
+  await cocherTache(page, 'Tâche à cocher');
+
+  // Vérifier qu'elle est cochée
+  await expect(checkbox).toBeChecked();
+
+});
+
+
+test('Supprimer une tâche', async ({ page }) => {
+
+  await page.goto('https://todomvc.com/examples/angular/dist/browser/#/all');
+
+  // Ajouter une tâche avant de la supprimer
+  const input = page.locator('input.new-todo');
+  await input.fill('Tâche à supprimer');
+  await input.press('Enter');
+
+  // Vérifier qu'elle existe
+  const items = page.locator('.todo-list li');
+  await expect(items).toHaveCount(1);
+
+  // Supprimer la tâche
+  await supprimerTache(page, 'Tâche à supprimer');
+
+  // Vérifier qu'elle a été supprimée
+  await expect(items).toHaveCount(0);
+
+});
