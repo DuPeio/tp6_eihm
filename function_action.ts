@@ -81,3 +81,7 @@ export function getLigneTache(page: Page, titre: string) {
   // Sélectionne le li qui contient un label avec le texte exact
   return page.locator('ul.todo-list li').filter({ hasText: titre });
 }
+
+export async function viderTachesTerminees(page: Page){
+    await page.getByRole('button', { name: 'Clear Completed' }).click();
+}

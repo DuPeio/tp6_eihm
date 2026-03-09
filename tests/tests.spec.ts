@@ -95,12 +95,14 @@ test('Ajouter une tâche et la place à la fin de la liste de 5 taches', async (
 });
 
 
-test('ajout en fin de liste de 6 taches et filtres Completed / Active ', async ({ page }) => {
+test('Ajout en fin de liste de 6 taches et filtres Completed / Active ', async ({ page }) => {
 
     await page.goto('https://todomvc.com/examples/angular/dist/browser/#/all');
 
     const input = page.locator('input.new-todo');
     const tasks = page.locator('.todo-list li');
+    const tache1 = 'Tâche 2'
+    const tache2 = 'Tâche 4'
 
     // Ajouter 5 tâches
     for (let i = 1; i <= 5; i++) {
@@ -121,16 +123,15 @@ test('ajout en fin de liste de 6 taches et filtres Completed / Active ', async (
     await expect(derniereTache).toContainText('Nouvelle tâche');
 
     // Cocher deux tâches
-    await action.basculerStatutTache(page, 'Tâche 2', "fait");
-    await action.basculerStatutTache(page, 'Tâche 4', "fait");
-    await verification.verifierStatutTache(page, 'Tâche 2', "fait")
-    await verification.verifierStatutTache(page, 'Tâche 4', "fait")
+    await action.basculerStatutTache(page, tache1, "fait");
+    await action.basculerStatutTache(page, tache2, "fait");
+    await verification.verifierStatutTache(page, tache1, "fait")
+    await verification.verifierStatutTache(page, tache2, "fait")
 
     // Filtrer les tâches terminées
     await action.filtrerParStatut(page, 'terminees')
     await verification.verifierNombreTachesAffichees(page, 2)
-    const tache1 = 'Tâche 2'
-    const tache2 = 'Tâche 4'
+  
 
     // verifier que les taches cochées sont bien dans la liste terminées  
     const tachesCocher = [tache1, tache2];
@@ -150,7 +151,7 @@ test('ajout en fin de liste de 6 taches et filtres Completed / Active ', async (
 });
 
 
-test('renommer tache avec string vide', async ({ page }) => {
+test('Renommer tache avec string vide', async ({ page }) => {
 
     await page.goto('https://todomvc.com/examples/angular/dist/browser/#/all');
 
@@ -186,6 +187,44 @@ test('renommer tache avec string vide', async ({ page }) => {
     for (const t of tachesCocher) {
         await verification.verifierAbsenceTache(page, t)
     }
+
+
+});
+
+
+test('Clear les taches finies', async ({ page }) => {
+
+    await page.goto('https://todomvc.com/examples/angular/dist/browser/#/all');
+    
+    const input = page.locator('input.new-todo');
+    const tasks = page.locator('.todo-list li');
+    const tache1 = 'Tâche 2'
+    const tache2 = 'Tâche 4'
+    const tachesCocher = [tache1, tache2];
+    
+    // Ajouter 5 tâches
+    for (let i = 1; i <= 5; i++) {
+        await action.ajouterUneTache(page, `Tâche ${i}`)
+    }
+
+    // Vérifier qu'il y a 5 tâches
+    await verification.verifierNombreTachesAffichees(page, 5);
+
+    //Cocher 2 taches comme faites
+    await action.basculerStatutTache(page, tache1, "fait");
+    await action.basculerStatutTache(page, tache2, "fait");
+    await verification.verifierStatutTache(page, tache1, "fait")
+    await verification.verifierStatutTache(page, tache2, "fait")
+
+    //On vide les taches terminees
+    await action.viderTachesTerminees(page);
+
+    //On verifie
+    await verification.verifierNombreTachesAffichees(page, 3);
+    for (const t of tachesCocher) {
+        await verification.verifierAbsenceTache(page, t)
+    }
+
 
 
 });
