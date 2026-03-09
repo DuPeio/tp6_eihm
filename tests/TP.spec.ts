@@ -266,9 +266,6 @@ test('Cocher une tâche comme faite', async ({ page }) => {
 
 });
 
-
-
-
 test('Changer une tâche terminée en tâche à faire', async ({ page }) => {
 
   await page.goto('https://todomvc.com/examples/angular/dist/browser/#/all');
@@ -295,8 +292,6 @@ test('Changer une tâche terminée en tâche à faire', async ({ page }) => {
 });
 
 
-
-
 test('Changer le nom d une tâche', async ({ page }) => {
 
   await page.goto('https://todomvc.com/examples/angular/dist/browser/#/all');
@@ -313,5 +308,93 @@ test('Changer le nom d une tâche', async ({ page }) => {
   // Vérifier que le nouveau nom apparaît
   const updatedTask = page.locator('.todo-list li', { hasText: 'Nouvelle tâche' });
   await expect(updatedTask).toHaveCount(1);
+
+});
+
+
+
+test('Ajouter une tâche la place à la fin de la liste', async ({ page }) => {
+
+  await page.goto('https://todomvc.com/examples/angular/dist/browser/#/all');
+
+  const input = page.locator('input.new-todo');
+  const tasks = page.locator('.todo-list li');
+
+  // Ajouter 5 tâches
+  for (let i = 1; i <= 5; i++) {
+    await input.fill(`Tâche ${i}`);
+    await input.press('Enter');
+  }
+
+  // Vérifier qu'il y a 5 tâches
+  await expect(tasks).toHaveCount(5);
+
+  // Ajouter une nouvelle tâche
+  const nouvelleTache = 'Nouvelle tâche';
+  await input.fill(nouvelleTache);
+  await input.press('Enter');
+
+  // Vérifier qu'il y a maintenant 6 tâches
+  await expect(tasks).toHaveCount(6);
+
+  // Vérifier que la nouvelle tâche est la dernière
+  const derniereTache = tasks.last();
+  await expect(derniereTache).toContainText(nouvelleTache);
+
+});
+
+
+test('Test ajout en fin de liste et filtres Completed / Active ', async ({ page }) => {
+
+  await page.goto('https://todomvc.com/examples/angular/dist/browser/#/all');
+
+  const input = page.locator('input.new-todo');
+  const tasks = page.locator('.todo-list li');
+
+  // Ajouter 5 tâches
+  for (let i = 1; i <= 5; i++) {
+    await input.fill(`Tâche ${i}`);
+    await input.press('Enter');
+  }
+
+  await expect(tasks).toHaveCount(5);
+
+  // Ajouter une nouvelle tâche
+  const nouvelleTache = 'Nouvelle tâche';
+  await input.fill(nouvelleTache);
+  await input.press('Enter');
+
+  await expect(tasks).toHaveCount(6);
+
+  // Vérifier que la nouvelle tâche est la dernière
+  const derniereTache = tasks.last();
+  await expect(derniereTache).toContainText(nouvelleTache);
+
+  // Cocher deux tâches
+  const tache1 = 'Tâche 2';
+  const tache2 = 'Tâche 4';
+
+  await page.locator('.todo-list li', { hasText: tache1 }).locator('input.toggle').check();
+  await page.locator('.todo-list li', { hasText: tache2 }).locator('input.toggle').check();
+
+  // Filtrer les tâches terminées
+  await page.locator('a[href="#/completed"]').click();
+
+  let visibleTasks = page.locator('.todo-list li');
+  await expect(visibleTasks).toHaveCount(2);
+  await expect(visibleTasks.nth(0)).toContainText(tache1);
+  await expect(visibleTasks.nth(1)).toContainText(tache2);
+
+  // Filtrer les tâches actives
+  await page.locator('a[href="#/active"]').click();
+
+  visibleTasks = page.locator('.todo-list li');
+  await expect(visibleTasks).toHaveCount(4);
+
+  // Vérifier qu'aucune des tâches cochées n'apparaît
+  const tachesCocher = [tache1, tache2];
+  for (const t of tachesCocher) {
+    await expect(page.locator('.todo-list li', { hasText: t })).toHaveCount(0);
+  }
 
 });
