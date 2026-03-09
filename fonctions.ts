@@ -73,6 +73,52 @@ export async function cocherTache(page: Page, label: string): Promise<void> {
 }
 
 
+/**
+ * Met une tâche à l'état "à faire" (non cochée)
+ * @param page Page Playwright
+ * @param label Texte de la tâche
+ */
+export async function remettreTacheAFaire(page: Page, label: string): Promise<void> {
+
+  const task = page.locator('.todo-list li', { hasText: label });
+  const checkbox = task.locator('input.toggle');
+
+  // Si la tâche est cochée, on la décoche
+  if (await checkbox.isChecked()) {
+    await checkbox.uncheck();
+  }
+}
+
+
+/**
+ * Change le nom d'une tâche
+ * @param page Page Playwright
+ * @param ancienNom Nom actuel de la tâche
+ * @param nouveauNom Nouveau nom de la tâche
+ */
+export async function renommerTache(
+  page: Page,
+  ancienNom: string,
+  nouveauNom: string
+): Promise<void> {
+
+  // Localiser la tâche
+  const task = page.locator('.todo-list li', { hasText: ancienNom });
+
+  // Double clic pour activer le mode édition
+  await task.dblclick();
+
+  // Champ d'édition
+  const editInput = task.locator('input.edit');
+
+  // Modifier le texte
+  await editInput.fill(nouveauNom);
+
+  // Valider avec Entrée
+  await editInput.press('Enter');
+}
+
+
 /* async function ajouterTache(page: import('@playwright/test').Page, label: string): Promise<void> {
   const input = page.locator('input.new-todo');
   await input.fill(label);

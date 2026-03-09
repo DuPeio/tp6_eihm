@@ -32,7 +32,7 @@
 
  //----------------------------------
 import { test, expect, Page } from '@playwright/test';
-
+import { cocherTache, supprimerTache, remettreTacheAFaire, renommerTache } from '../fonctions';
 
 // FONCTIONS D'ACTION
 
@@ -222,9 +222,27 @@ test.describe('Gestion de la "To-Do List" (Modèle de Tâche)', () => {
 
 
 
+test('Supprimer une tâche', async ({ page }) => {
 
+  await page.goto('https://todomvc.com/examples/angular/dist/browser/#/all');
 
-import { cocherTache, supprimerTache } from '../fonctions';
+  // Ajouter une tâche avant de la supprimer
+  const input = page.locator('input.new-todo');
+  await input.fill('Tâche à supprimer');
+  await input.press('Enter');
+
+  // Vérifier qu'elle existe
+  const items = page.locator('.todo-list li');
+  await expect(items).toHaveCount(1);
+
+  // Supprimer la tâche
+  await supprimerTache(page, 'Tâche à supprimer');
+
+  // Vérifier qu'elle a été supprimée
+  await expect(items).toHaveCount(0);
+
+});
+
 
 test('Cocher une tâche comme faite', async ({ page }) => {
 
@@ -249,23 +267,51 @@ test('Cocher une tâche comme faite', async ({ page }) => {
 });
 
 
-test('Supprimer une tâche', async ({ page }) => {
+
+
+test('Changer une tâche terminée en tâche à faire', async ({ page }) => {
 
   await page.goto('https://todomvc.com/examples/angular/dist/browser/#/all');
 
-  // Ajouter une tâche avant de la supprimer
   const input = page.locator('input.new-todo');
-  await input.fill('Tâche à supprimer');
+
+  // Ajouter une tâche
+  await input.fill('Ma tâche');
   await input.press('Enter');
 
-  // Vérifier qu'elle existe
-  const items = page.locator('.todo-list li');
-  await expect(items).toHaveCount(1);
+  const task = page.locator('.todo-list li', { hasText: 'Ma tâche' });
+  const checkbox = task.locator('input.toggle');
 
-  // Supprimer la tâche
-  await supprimerTache(page, 'Tâche à supprimer');
+  // Marquer la tâche comme terminée
+  await checkbox.check();
+  await expect(checkbox).toBeChecked();
 
-  // Vérifier qu'elle a été supprimée
-  await expect(items).toHaveCount(0);
+  // Remettre la tâche à faire
+  await remettreTacheAFaire(page, 'Ma tâche');
+
+  // Vérifier que la tâche est maintenant à faire
+  await expect(checkbox).not.toBeChecked();
+
+});
+
+
+
+
+test('Changer le nom d une tâche', async ({ page }) => {
+
+  await page.goto('https://todomvc.com/examples/angular/dist/browser/#/all');
+
+  const input = page.locator('input.new-todo');
+
+  // Ajouter une tâche
+  await input.fill('Ancienne tâche');
+  await input.press('Enter');
+
+  // Renommer la tâche
+  await renommerTache(page, 'Ancienne tâche', 'Nouvelle tâche');
+
+  // Vérifier que le nouveau nom apparaît
+  const updatedTask = page.locator('.todo-list li', { hasText: 'Nouvelle tâche' });
+  await expect(updatedTask).toHaveCount(1);
 
 });
