@@ -1,7 +1,7 @@
 # tp6_eihm
 Pierre MAGIEU & Benoît SION
 
-Démarche suivie :
+## Démarche suivie :
 
 Pour les fonctions d'action
 Chaque tâche élémentaire de type interaction devient une fonction action. Ces fonctions représentent les interactions possibles de l'utilisateur avec l'interface comme spécifié par le modèle de tâches. 
