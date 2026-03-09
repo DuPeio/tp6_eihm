@@ -1,2 +1,2 @@
 # tp6_eihm
-Pierre MAGIEU & Benoît Sion 
+Pierre MAGIEU & Benoît SION
