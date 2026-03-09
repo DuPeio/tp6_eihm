@@ -67,8 +67,7 @@ test.describe('Gestion de la "To-Do List" (Modèle de Tâche)', () => {
 });
 
 
-
-test('Ajouter une tâche la place à la fin de la liste de 5 taches', async ({ page }) => {
+test('Ajouter une tâche et la place à la fin de la liste de 5 taches', async ({ page }) => {
 
     await page.goto('https://todomvc.com/examples/angular/dist/browser/#/all');
 
@@ -78,15 +77,13 @@ test('Ajouter une tâche la place à la fin de la liste de 5 taches', async ({ p
     // Ajouter 5 tâches
     for (let i = 1; i <= 5; i++) {
         await action.ajouterUneTache(page, `Tâche ${i}`)
-
     }
 
     // Vérifier qu'il y a 5 tâches
     await verification.verifierNombreTachesAffichees(page, 5);
 
     // Ajouter une nouvelle tâche
-    await action.ajouterUneTache(page, 'Nouvelle tâche')
-
+    await action.ajouterUneTache(page, 'Nouvelle tâche');
 
     // Vérifier qu'il y a maintenant 6 tâches
     await verification.verifierNombreTachesAffichees(page, 6);
@@ -114,8 +111,7 @@ test('ajout en fin de liste de 6 taches et filtres Completed / Active ', async (
     await verification.verifierNombreTachesAffichees(page, 5);
 
     // Ajouter une nouvelle tâche
-    await action.ajouterUneTache(page, 'Nouvelle tâche')
-
+    await action.ajouterUneTache(page, 'Nouvelle tâche');
 
     // Vérifier qu'il y a maintenant 6 tâches
     await verification.verifierNombreTachesAffichees(page, 6);
@@ -169,11 +165,11 @@ test('renommer tache avec string vide', async ({ page }) => {
     //Vérification du nombre total de tâches
     await verification.verifierNombreTachesAffichees(page, 5);
 
-    //On renomme en chaine de caracteres vide pour supprimer les taches
+    //On renomme en chaîne de caractères vide pour supprimer les taches.
     await action.renommerUneTache(page, 'Tâche 1', '');
     await action.renommerUneTache(page, 'Tâche 5', '');
 
-    //On vérifie que les taches ont bien été supprimé pour chaque filtre
+    //On vérifie que les taches ont bien été supprimées pour chaque filtre.
 
     for (const t of tachesCocher) {
         await verification.verifierAbsenceTache(page, t)
