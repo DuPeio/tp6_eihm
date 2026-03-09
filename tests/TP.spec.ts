@@ -54,8 +54,8 @@ export async function ajouterUneTache(page: Page, titre: string): Promise<void> 
  */
 export async function supprimerUneTache(page: Page, titre: string): Promise<void> {
   const ligneTache = getLigneTache(page, titre);
-  await ligneTache.hover(); // Action articulatoire nécessaire pour l'IHM actuelle
-  await ligneTache.locator('.destroy').click();
+  await ligneTache.hover(); 
+  await ligneTache.locator('button.destroy').click();
 }
 
 /**
@@ -64,7 +64,7 @@ export async function supprimerUneTache(page: Page, titre: string): Promise<void
  */
 export async function basculerStatutTache(page: Page, titre: string, etatCible: 'fait' | 'a_faire'): Promise<void> {
   const ligneTache = getLigneTache(page, titre);
-  const checkbox = ligneTache.locator('.toggle');
+  const checkbox = ligneTache.locator('input.toggle');
   
   const estCoche = await checkbox.isChecked();
   const doitEtreCoche = (etatCible === 'fait');
@@ -80,9 +80,9 @@ export async function basculerStatutTache(page: Page, titre: string, etatCible: 
  */
 export async function renommerUneTache(page: Page, ancienTitre: string, nouveauTitre: string): Promise<void> {
   const ligneTache = getLigneTache(page, ancienTitre);
-  await ligneTache.dblclick(); // Action articulatoire : double click pour éditer
+  await ligneTache.dblclick();
   
-  const inputEdition = ligneTache.locator('.edit');
+  const inputEdition = ligneTache.locator('input.edit');
   await inputEdition.fill(nouveauTitre);
   await inputEdition.press('Enter');
 }
@@ -93,32 +93,34 @@ export async function renommerUneTache(page: Page, ancienTitre: string, nouveauT
  * Abstraction : L'utilisateur "voit" les tâches actives, complètes ou toutes.
  */
 export async function filtrerParStatut(page: Page, filtre: 'toutes' | 'actives' | 'terminees'): Promise<void> {
-  // Mapping sémantique vers les sélecteurs techniques
-  const indexLiens = {
-    'toutes': 1,
-    'actives': 2,
-    'terminees': 3
-  };
-  const lien = page.locator(`.filters li a:nth-child(${indexLiens[filtre]})`);
-  await lien.click();
+  let hrefValue = '';
+  switch (filtre) {
+    case 'toutes':
+      hrefValue = '#/';
+      break;
+    case 'actives':
+      hrefValue = '#/active';
+      break;
+    case 'terminees':
+      hrefValue = '#/completed';
+      break;
+  }
+  
+  // Sélection précise via l'attribut href dans la liste .filters
+  await page.locator(`ul.filters li a[href="${hrefValue}"]`).click();
 }
 
 
-/**
- * Retourne le locator d'une ligne de tâche spécifique.
- * Centralise le sélecteur CSS '.todo-list li' pour faciliter la maintenance.
- */
 function getLigneTache(page: Page, titre: string) {
-  return page.locator('.todo-list li').filter({ hasText: titre });
+  // Sélectionne le li qui contient un label avec le texte exact
+  return page.locator('ul.todo-list li').filter({ hasText: titre });
 }
-
 
 
 //FONCTIONS DE VÉRIFICATION
 
 /**
  * Vérifie qu'une tâche avec un titre donné est visible dans la liste.
- * Niveau : Conceptuel & Tâche (C&T)
  */
 export async function verifierPresenceTache(page: Page, titre: string): Promise<void> {
   await expect(getLigneTache(page, titre)).toBeVisible();
@@ -134,19 +136,17 @@ export async function verifierAbsenceTache(page: Page, titre: string): Promise<v
 
 /**
  * Vérifie le nombre total de tâches affichées (dans le filtre actuel).
- * Niveau : AUI (Affichage Utilisateur)
  */
 export async function verifierNombreTachesAffichees(page: Page, nombre: number): Promise<void> {
-  await expect(page.locator('.todo-list li')).toHaveCount(nombre);
+  await expect(page.locator('ul.todo-list li')).toHaveCount(nombre);
 }
 
 /**
  * Vérifie si une tâche est marquée comme "faite" visuellement.
- * Niveau : AUI (On vérifie l'état perçu, ici via la propriété checked de la checkbox)
  */
 export async function verifierStatutTache(page: Page, titre: string, etat: 'fait' | 'a_faire'): Promise<void> {
   const ligne = getLigneTache(page, titre);
-  const checkbox = ligne.locator('.toggle');
+  const checkbox = ligne.locator('input.toggle');
   const estCoche = await checkbox.isChecked();
   
   if (etat === 'fait') {
@@ -158,16 +158,13 @@ export async function verifierStatutTache(page: Page, titre: string, etat: 'fait
 
 
 // SCÉNARIOS DE TEST
-
 test.describe('Gestion de la "To-Do List" (Modèle de Tâche)', () => {
 
   test('N:1 - Scénario : Ajouter une nouvelle tâche', async ({ page }) => {
     await page.goto('https://todomvc.com/examples/angular/dist/browser/#/');
 
-    // Action niveau tâche
     await ajouterUneTache(page, 'Apprendre Playwright');
 
-    // Vérification niveau C&T
     await verifierPresenceTache(page, 'Apprendre Playwright');
     await verifierNombreTachesAffichees(page, 1);
   });
@@ -180,18 +177,18 @@ test.describe('Gestion de la "To-Do List" (Modèle de Tâche)', () => {
     await ajouterUneTache(page, 'Tâche 2');
     await basculerStatutTache(page, 'Tâche 2', 'fait');
 
-    // Test N:2.1.2 : Voir les tâches actives
+    // Test N:2.1.2 : Voir les tâches actives (href="#/active")
     await filtrerParStatut(page, 'actives');
     await verifierNombreTachesAffichees(page, 1);
     await verifierPresenceTache(page, 'Tâche 1');
-    await verifierAbsenceTache(page, 'Tâche 2'); 
+    await verifierAbsenceTache(page, 'Tâche 2');
 
-    // Test N:2.1.1 : Voir les tâches terminées
+    // Test N:2.1.1 : Voir les tâches terminées (href="#/completed")
     await filtrerParStatut(page, 'terminees');
     await verifierNombreTachesAffichees(page, 1);
     await verifierPresenceTache(page, 'Tâche 2');
 
-    // Test N:2.1.3 : Revoir tout
+    // Test N:2.1.3 : Revoir tout (href="#/")
     await filtrerParStatut(page, 'toutes');
     await verifierNombreTachesAffichees(page, 2);
   });
@@ -201,14 +198,11 @@ test.describe('Gestion de la "To-Do List" (Modèle de Tâche)', () => {
 
     await ajouterUneTache(page, 'Tâche à lifecycle complet');
 
-    // Action : Marquer comme faite
     await basculerStatutTache(page, 'Tâche à lifecycle complet', 'fait');
     await verifierStatutTache(page, 'Tâche à lifecycle complet', 'fait');
 
-    // Action : Supprimer
     await supprimerUneTache(page, 'Tâche à lifecycle complet');
 
-    // Vérification finale
     await verifierAbsenceTache(page, 'Tâche à lifecycle complet');
     await verifierNombreTachesAffichees(page, 0);
   });
@@ -218,12 +212,10 @@ test.describe('Gestion de la "To-Do List" (Modèle de Tâche)', () => {
 
     await ajouterUneTache(page, 'Nom Provisoire');
 
-    // Action : Renommer
     await renommerUneTache(page, 'Nom Provisoire', 'Nom Définitif');
 
-    // Vérifications
     await verifierAbsenceTache(page, 'Nom Provisoire');
-    await verifierPresenceTache(page, 'Nom Définitif'); 
+    await verifierPresenceTache(page, 'Nom Définitif');
   });
 
 });
